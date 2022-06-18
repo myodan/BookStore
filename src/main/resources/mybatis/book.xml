@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="book">
+    <sql id="search">
+        SELECT *
+        FROM BOOK
+        <where>
+            <if test="filter == 1">
+                BOOKID LIKE '%' || '${keyword}' || '%'
+            </if>
+
+            <if test="filter == 2">
+                BOOKNAME LIKE '%' || '${keyword}' || '%'
+            </if>
+
+            <if test="filter == 3">
+                PUBLISHER LIKE '%' || '${keyword}' || '%'
+            </if>
+        </where>
+        ORDER BY BOOKID
+    </sql>
+
+    <select id="findAll" resultType="book">
+        SELECT *
+        FROM BOOK
+    </select>
+
+    <select id="findAllPageable" resultType="book">
+        SELECT *
+        FROM (SELECT T1.*, ROWNUM as rnum
+        FROM (<include refid="search"/>) T1) T2
+        WHERE T2.rnum between ((#{page} - 1) * #{offset}) + 1 and (#{page} * #{offset})
+    </select>
+
+    <select id="findById" resultType="book">
+        SELECT *
+        FROM BOOK
+        WHERE BOOKID = #{bookId}
+    </select>
+
+    <select id="total" resultType="int">
+        SELECT COUNT(*)
+        FROM (<include refid="search"/>)
+    </select>
+
+    <insert id="save">
+        INSERT INTO BOOK
+        VALUES (#{bookId}, #{bookName}, #{publisher}, #{price})
+    </insert>
+
+    <update id="update">
+        UPDATE BOOK
+        SET BOOKNAME  = #{bookName},
+            PUBLISHER = #{publisher},
+            PRICE     = #{price}
+        WHERE BOOKID = #{bookId}
+    </update>
+
+    <delete id="delete">
+        DELETE
+        FROM BOOK
+        WHERE BOOKID = #{bookId}
+    </delete>
+</mapper>
